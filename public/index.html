@@ -103,7 +103,7 @@ tr:hover {
     <h3>Add / Update Speaker</h3>
 
     <input id="speakerId" placeholder="Speaker ID (SPK-101)" />
-    <input id="name" placeholder="Name" />
+    <input id="speakerName" placeholder="Name" />
     <input id="designation" placeholder="Designation" />
     <input id="organization" placeholder="Organization" />
     <input id="expertise" placeholder="Expertise" />
@@ -153,7 +153,7 @@ async function loadSpeakers() {
 async function saveSpeaker() {
   const sp = {
     speakerId:speakerId.value,
-    name:name.value,
+    name:speakerName.value,
     designation:designation.value,
     organization:organization.value,
     expertise:expertise.value,
@@ -173,7 +173,7 @@ async function saveSpeaker() {
 
 function edit(s) {
   speakerId.value = s.speakerId;
-  name.value = s.name;
+  speakerName.value = s.name;
   designation.value = s.designation;
   organization.value = s.organization;
   expertise.value = s.expertise;
@@ -195,4 +195,3 @@ loadSpeakers();
 
 </body>
 </html>
-
