@@ -1,29 +1,28 @@
-let speakers = [
-  {
-    speakerId: "SPK-101",
-    name: "Dr. Arun Kumar",
-    designation: "Professor",
-    organization: "IIT Madras",
-    expertise: "Artificial Intelligence",
-    email: "arun.kumar@example.com",
-    phone: "9876543210"
-  }
-];
+import fs from "fs";
+import path from "path";
+
+const dataFilePath = path.join(process.cwd(), "data", "speakers.json");
+
+function readSpeakers() {
+  const fileData = fs.readFileSync(dataFilePath, "utf8");
+  return JSON.parse(fileData);
+}
+
+function writeSpeakers(data) {
+  fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+}
 
 export default function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Content-Type", "application/json");
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  let speakers = readSpeakers();
 
-  const { method, query, body } = req;
-
-  if (method === "GET") {
-    if (query.id) {
-      const speaker = speakers.find(s => s.speakerId === query.id);
+  // GET speaker(s)
+  if (req.method === "GET") {
+    if (req.query.id) {
+      const speaker = speakers.find(
+        s => s.speakerId === req.query.id
+      );
       return speaker
         ? res.status(200).json(speaker)
         : res.status(404).json({ message: "Speaker not found" });
@@ -31,22 +30,29 @@ export default function handler(req, res) {
     return res.status(200).json(speakers);
   }
 
-  if (method === "POST") {
-    speakers.push(body);
-    return res.status(201).json({ message: "Speaker added" });
+  // ADD speaker
+  if (req.method === "POST") {
+    const newSpeaker = req.body;
+
+    if (!newSpeaker || !newSpeaker.speakerId) {
+      return res.status(400).json({ message: "Invalid speaker data" });
+    }
+
+    speakers.push(newSpeaker);
+    writeSpeakers(speakers);
+
+    return res.status(201).json({ message: "Speaker added successfully" });
   }
 
-  if (method === "PUT") {
-    speakers = speakers.map(s =>
-      s.speakerId === body.speakerId ? body : s
+  // DELETE speaker
+  if (req.method === "DELETE") {
+    speakers = speakers.filter(
+      s => s.speakerId !== req.query.id
     );
-    return res.status(200).json({ message: "Speaker updated" });
-  }
+    writeSpeakers(speakers);
 
-  if (method === "DELETE") {
-    speakers = speakers.filter(s => s.speakerId !== query.id);
     return res.status(200).json({ message: "Speaker deleted" });
   }
 
-  res.status(405).json({ message: "Method not allowed" });
+  return res.status(405).json({ message: "Method not allowed" });
 }
