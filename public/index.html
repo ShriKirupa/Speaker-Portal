@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Speaker Directory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root {
+  --primary:#6366f1;
+  --bg:#f8fafc;
+  --card:#ffffff;
+}
+
+body {
+  margin:0;
+  font-family: "Inter", system-ui, sans-serif;
+  background:var(--bg);
+}
+
+header {
+  background:var(--primary);
+  color:#fff;
+  padding:20px;
+  text-align:center;
+  font-size:1.4rem;
+  font-weight:600;
+}
+
+.container {
+  max-width:1000px;
+  margin:30px auto;
+  padding:0 20px;
+  display:grid;
+  grid-template-columns: 1fr 2fr;
+  gap:20px;
+}
+
+.card {
+  background:var(--card);
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 8px 25px rgba(0,0,0,.08);
+}
+
+.card h3 {
+  margin-top:0;
+  margin-bottom:15px;
+}
+
+input {
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+
+button {
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+button.secondary {
+  background:#e5e7eb;
+  color:#111;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  padding:12px;
+  border-bottom:1px solid #eee;
+  text-align:left;
+}
+
+tr:hover {
+  background:#f1f5f9;
+}
+
+.actions button {
+  margin-right:6px;
+  font-size:.85rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>🎤 Speaker Management Portal</header>
+
+<div class="container">
+
+  <!-- FORM -->
+  <div class="card">
+    <h3>Add / Update Speaker</h3>
+
+    <input id="speakerId" placeholder="Speaker ID (SPK-101)" />
+    <input id="name" placeholder="Name" />
+    <input id="designation" placeholder="Designation" />
+    <input id="organization" placeholder="Organization" />
+    <input id="expertise" placeholder="Expertise" />
+    <input id="email" placeholder="Email" />
+    <input id="phone" placeholder="Phone" />
+
+    <button onclick="saveSpeaker()">Save Speaker</button>
+  </div>
+
+  <!-- LIST -->
+  <div class="card">
+    <h3>Speakers</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Expertise</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="list"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const api = "/api/speakers";
+
+async function loadSpeakers() {
+  const res = await fetch(api);
+  const data = await res.json();
+  list.innerHTML = data.map(s => `
+    <tr>
+      <td>${s.speakerId}</td>
+      <td>${s.name}</td>
+      <td>${s.expertise}</td>
+      <td class="actions">
+        <button class="secondary" onclick='edit(${JSON.stringify(s)})'>Edit</button>
+        <button class="secondary" onclick='remove("${s.speakerId}")'>Delete</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+async function saveSpeaker() {
+  const sp = {
+    speakerId:speakerId.value,
+    name:name.value,
+    designation:designation.value,
+    organization:organization.value,
+    expertise:expertise.value,
+    email:email.value,
+    phone:phone.value
+  };
+
+  await fetch(api,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(sp)
+  });
+
+  clearForm();
+  loadSpeakers();
+}
+
+function edit(s) {
+  speakerId.value = s.speakerId;
+  name.value = s.name;
+  designation.value = s.designation;
+  organization.value = s.organization;
+  expertise.value = s.expertise;
+  email.value = s.email;
+  phone.value = s.phone;
+}
+
+async function remove(id) {
+  await fetch(api+"?id="+id,{ method:"DELETE" });
+  loadSpeakers();
+}
+
+function clearForm() {
+  document.querySelectorAll("input").forEach(i => i.value="");
+}
+
+loadSpeakers();
+</script>
+
+</body>
+</html>
